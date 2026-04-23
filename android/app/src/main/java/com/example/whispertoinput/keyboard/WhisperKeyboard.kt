@@ -68,6 +68,7 @@ class WhisperKeyboard {
     private var onSpaceBar: () -> Unit = { }
     private var onAtSymbol: () -> Unit = { }
     private var onNewline: () -> Unit = { }
+    private var onDigit: (String) -> Unit = { }
     private var shouldShowRetry: () -> Boolean = { false }
 
     // Keyboard Status
@@ -87,6 +88,9 @@ class WhisperKeyboard {
     private var buttonSettings: ImageButton? = null
     private var buttonAtSymbol: TextView? = null
     private var buttonNewline: TextView? = null
+    private var buttonNumberToggle: TextView? = null
+    private var numberPad: View? = null
+    private var digitButtons: Array<TextView> = emptyArray()
     private var micRippleContainer: ConstraintLayout? = null
     private var micRipples: Array<ImageView> = emptyArray()
 
@@ -104,6 +108,7 @@ class WhisperKeyboard {
         onOpenSettings: () -> Unit,
         onAtSymbol: () -> Unit,
         onNewline: () -> Unit,
+        onDigit: (String) -> Unit,
         shouldShowRetry: () -> Boolean,
     ): View {
         // Inflate the keyboard layout & assign views
@@ -120,6 +125,20 @@ class WhisperKeyboard {
         buttonSettings = keyboardView!!.findViewById(R.id.btn_settings) as ImageButton
         buttonAtSymbol = keyboardView!!.findViewById(R.id.btn_at_symbol) as TextView
         buttonNewline = keyboardView!!.findViewById(R.id.btn_newline) as TextView
+        buttonNumberToggle = keyboardView!!.findViewById(R.id.btn_number_toggle) as TextView
+        numberPad = keyboardView!!.findViewById(R.id.number_pad)
+        digitButtons = arrayOf(
+            keyboardView!!.findViewById(R.id.btn_digit_0) as TextView,
+            keyboardView!!.findViewById(R.id.btn_digit_1) as TextView,
+            keyboardView!!.findViewById(R.id.btn_digit_2) as TextView,
+            keyboardView!!.findViewById(R.id.btn_digit_3) as TextView,
+            keyboardView!!.findViewById(R.id.btn_digit_4) as TextView,
+            keyboardView!!.findViewById(R.id.btn_digit_5) as TextView,
+            keyboardView!!.findViewById(R.id.btn_digit_6) as TextView,
+            keyboardView!!.findViewById(R.id.btn_digit_7) as TextView,
+            keyboardView!!.findViewById(R.id.btn_digit_8) as TextView,
+            keyboardView!!.findViewById(R.id.btn_digit_9) as TextView,
+        )
         micRippleContainer = keyboardView!!.findViewById(R.id.mic_ripples) as ConstraintLayout
         micRipples = arrayOf(
             keyboardView!!.findViewById(R.id.mic_ripple_0) as ImageView,
@@ -145,6 +164,17 @@ class WhisperKeyboard {
         buttonAtSymbol!!.setOnClickListener { it.hapticTap(); onAtSymbol() }
         buttonNewline!!.setOnClickListener { it.hapticTap(); onNewline() }
 
+        buttonNumberToggle!!.setOnClickListener {
+            it.hapticTap()
+            numberPad!!.visibility = if (numberPad!!.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+        }
+        for (btn in digitButtons) {
+            btn.setOnClickListener { v ->
+                v.hapticTap()
+                onDigit((v as TextView).text.toString())
+            }
+        }
+
         if (shouldOfferImeSwitch) {
             buttonPreviousIme!!.setOnClickListener { it.hapticTap(); onButtonPreviousImeClick() }
         }
@@ -161,6 +191,7 @@ class WhisperKeyboard {
         this.onSpaceBar = onSpaceBar
         this.onAtSymbol = onAtSymbol
         this.onNewline = onNewline
+        this.onDigit = onDigit
         this.shouldShowRetry = shouldShowRetry
 
         // Resets keyboard upon setup
@@ -313,7 +344,9 @@ class WhisperKeyboard {
                 buttonMic!!.setImageResource(R.drawable.mic_idle)
                 waitingIcon!!.visibility = View.INVISIBLE
                 buttonCancel!!.visibility = View.INVISIBLE
-                buttonRetry!!.visibility = if (shouldShowRetry()) View.VISIBLE else View.INVISIBLE
+                // Retry button was removed from the visible UI per user request;
+                // force it gone so the layout can never re-show it.
+                buttonRetry!!.visibility = View.GONE
                 micRippleContainer!!.visibility = View.GONE
                 keyboardView!!.keepScreenOn = false
             }

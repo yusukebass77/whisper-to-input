@@ -136,6 +136,7 @@ class WhisperInputService : InputMethodService() {
             { onOpenSettings() },
             { onAtSymbol() },
             { onNewline() },
+            { digit -> onDigit(digit) },
             { shouldShowRetry() },
         )
     }
@@ -148,6 +149,10 @@ class WhisperInputService : InputMethodService() {
         // Always inserts a literal newline, regardless of the destination field's
         // Enter-action. Counterpart to onEnter(), which respects the field's action.
         currentInputConnection?.commitText("\n", 1)
+    }
+
+    private fun onDigit(digit: String) {
+        currentInputConnection?.commitText(digit, 1)
     }
 
     private fun onStartRecording() {
