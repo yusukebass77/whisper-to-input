@@ -21,6 +21,7 @@ package com.example.whispertoinput.keyboard
 
 import android.util.Log
 import android.view.GestureDetector
+import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -33,6 +34,11 @@ import androidx.core.math.MathUtils
 import com.example.whispertoinput.R
 import kotlin.math.log10
 import kotlin.math.pow
+
+private fun View.hapticTap() {
+    // KEYBOARD_TAP gives a short, crisp tick that matches soft-keyboard UX on most devices.
+    performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+}
 
 private const val AMPLITUDE_CLAMP_MIN: Int = 10
 private const val AMPLITUDE_CLAMP_MAX: Int = 25000
@@ -117,17 +123,18 @@ class WhisperKeyboard {
             buttonPreviousIme!!.visibility = View.GONE
         }
 
-        // Set onClick listeners
-        buttonMic!!.setOnClickListener { onButtonMicClick() }
-        buttonEnter!!.setOnClickListener { onButtonEnterClick() }
-        buttonCancel!!.setOnClickListener { onButtonCancelClick() }
-        buttonRetry!!.setOnClickListener { onButtonRetryClick() }
-        buttonSettings!!.setOnClickListener { onButtonSettingsClick() }
+        // Set onClick listeners (each tap also fires a short haptic tick)
+        buttonMic!!.setOnClickListener { it.hapticTap(); onButtonMicClick() }
+        buttonEnter!!.setOnClickListener { it.hapticTap(); onButtonEnterClick() }
+        buttonCancel!!.setOnClickListener { it.hapticTap(); onButtonCancelClick() }
+        buttonRetry!!.setOnClickListener { it.hapticTap(); onButtonRetryClick() }
+        buttonSettings!!.setOnClickListener { it.hapticTap(); onButtonSettingsClick() }
+        // BackspaceButton has its own custom callback wiring — haptic fires inside its class
         buttonBackspace!!.setBackspaceCallback { onButtonBackspaceClick() }
-        buttonSpaceBar!!.setOnClickListener { onButtonSpaceBarClick() }
+        buttonSpaceBar!!.setOnClickListener { it.hapticTap(); onButtonSpaceBarClick() }
 
         if (shouldOfferImeSwitch) {
-            buttonPreviousIme!!.setOnClickListener { onButtonPreviousImeClick() }
+            buttonPreviousIme!!.setOnClickListener { it.hapticTap(); onButtonPreviousImeClick() }
         }
 
         // Set event listeners

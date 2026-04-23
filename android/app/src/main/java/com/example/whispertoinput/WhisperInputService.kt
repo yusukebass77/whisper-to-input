@@ -203,7 +203,11 @@ class WhisperInputService : InputMethodService() {
 
     private fun onEnter() {
         val inputConnection = currentInputConnection ?: return
+        // Some modern editors (Discord, multi-line text fields after paste, etc.) drop the
+        // Enter key press unless both DOWN and UP events are delivered. The original code
+        // only sent DOWN, which made the key silently inert in many contexts.
         inputConnection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
+        inputConnection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
     }
 
     private fun onSpaceBar() {

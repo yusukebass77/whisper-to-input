@@ -23,6 +23,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
 import android.view.GestureDetector
+import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatImageButton
 import kotlinx.coroutines.CoroutineScope
@@ -43,6 +44,7 @@ class BackspaceButton(context: Context, attrs: AttributeSet) :
         setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
+                    performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                     performClick()
                     startLongPressDetector()
                 }
