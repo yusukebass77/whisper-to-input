@@ -19,6 +19,20 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 -->
+<!--
+    Phase 2b layout — Typeless-style reorganization.
+
+    Top row: IME switch on the left; @ / space / backspace / settings as a
+    compact icon row on the right.
+    Middle:  status label + large mic button (with cancel/retry overlay).
+    Bottom:  single 改行 button, centered.
+
+    The original large space bar and enter ↩ button have been removed from the
+    visible layout (the enter button is kept as visibility="gone" so the
+    existing Kotlin lifecycle — "during recording, enter = stop + transcribe +
+    \n" — is not broken; users just invoke that flow via the 改行 button or
+    the mic button instead).
+-->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -29,7 +43,7 @@
     android:layout_alignParentBottom="true"
     android:layout_gravity="bottom"
     android:clipToPadding="false"
-    android:paddingBottom="10dp">
+    android:paddingBottom="12dp">
 
     <View
         style="@style/TopBar"
@@ -40,32 +54,99 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- ─── Top row ─────────────────────────────────────────────────── -->
+
+    <ImageButton
+        style="@style/RegularImage"
+        android:id="@+id/btn_previous_ime"
+        android:layout_width="48dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="6dp"
+        android:backgroundTint="#00000000"
+        android:contentDescription="@string/btn_previous_ime_hint"
+        android:scaleType="fitCenter"
+        android:src="@drawable/btn_previous_ime"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/view_top_bar" />
+
+    <LinearLayout
+        android:id="@+id/top_icon_row"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="6dp"
+        android:gravity="center_vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/view_top_bar">
+
+        <TextView
+            style="@style/RegularText"
+            android:id="@+id/btn_at_symbol"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:contentDescription="@string/btn_at_symbol_hint" />
+
+        <ImageButton
+            style="@style/RegularImage"
+            android:id="@+id/btn_space_bar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="4dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/desc_space_bar"
+            android:scaleType="fitCenter"
+            android:padding="10dp"
+            android:src="@drawable/btn_space_bar" />
+
+        <com.example.whispertoinput.keyboard.BackspaceButton
+            style="@style/RegularImage"
+            android:id="@+id/btn_backspace"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="4dp"
+            android:backgroundTint="#00000000"
+            android:contentDescription="@string/backspace_button_hint"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/btn_backspace" />
+
+        <ImageButton
+            style="@style/RegularImage"
+            android:id="@+id/btn_settings"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="4dp"
+            android:backgroundTint="#00000000"
+            android:contentDescription="@string/btn_previous_ime_hint"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/btn_settings" />
+    </LinearLayout>
+
+    <!-- ─── Middle: status label + mic button ─────────────────────────── -->
+
     <TextView
         style="@style/RegularText"
         android:id="@+id/label_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="8dp"
         android:text="@string/whisper_to_input"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/btn_mic_frame"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view_top_bar" />
-
-    <ImageButton
-        style="@style/RegularImage"
-        android:id="@+id/btn_space_bar"
-        android:layout_width="123dp"
-        android:layout_height="35dp"
-        android:background="#00FFFFFF"
-        android:contentDescription="@string/desc_space_bar"
-        android:scaleType="fitCenter"
-        android:src="@drawable/btn_space_bar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_mic_frame"/>
+        app:layout_constraintTop_toBottomOf="@+id/btn_previous_ime" />
 
     <FrameLayout
         android:id="@+id/btn_mic_frame"
@@ -74,9 +155,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/label_status">
-
-
-
 
         <ImageButton
             android:id="@+id/btn_mic"
@@ -148,27 +226,10 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
-
-
     </FrameLayout>
 
-
-    <ImageButton
-        style="@style/RegularImage"
-        android:id="@+id/btn_enter"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:background="#00FFFFFF"
-        android:contentDescription="@string/start_transcribing"
-        android:scaleType="fitCenter"
-        android:src="@drawable/btn_enter"
-        android:translationX="-3dp"
-        app:layout_constraintBottom_toBottomOf="@+id/btn_space_bar"
-        app:layout_constraintEnd_toEndOf="@+id/btn_backspace"
-        app:layout_constraintTop_toTopOf="@+id/btn_space_bar" />
-
+    <!-- Cancel overlay (visible only while recording/transcribing) -->
     <ImageButton
         style="@style/RegularImage"
         android:id="@+id/btn_cancel"
@@ -186,6 +247,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/btn_mic_frame"
         app:layout_constraintEnd_toStartOf="@+id/btn_mic_frame" />
 
+    <!-- Retry overlay (visible only when idle + retry available) -->
     <ImageButton
         style="@style/RegularImage"
         android:id="@+id/btn_retry"
@@ -203,87 +265,37 @@
         app:layout_constraintBottom_toBottomOf="@+id/btn_mic_frame"
         app:layout_constraintEnd_toStartOf="@+id/btn_mic_frame" />
 
-    <com.example.whispertoinput.keyboard.BackspaceButton
-        style="@style/RegularImage"
-        android:id="@+id/btn_backspace"
-        android:layout_width="60dp"
-        android:layout_height="50dp"
-        android:layout_marginStart="16dp"
-        android:backgroundTint="#00000000"
-        android:contentDescription="@string/backspace_button_hint"
-        android:paddingStart="10dp"
-        android:paddingTop="5dp"
-        android:paddingEnd="10dp"
-        android:paddingBottom="5dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/btn_backspace"
-        app:layout_constraintStart_toEndOf="@+id/btn_mic_frame"
-        app:layout_constraintTop_toTopOf="@+id/btn_mic_frame"
-        app:layout_constraintBottom_toBottomOf="@+id/btn_mic_frame"/>
-
+    <!-- Hidden: the old Enter ↩ button is retained so the recording-stop-
+         with-newline code path in WhisperKeyboard.kt keeps compiling, but
+         no longer shown on screen. The visible 改行 button below always
+         inserts "\n", which covers the user-facing use case. -->
     <ImageButton
         style="@style/RegularImage"
-        android:id="@+id/btn_previous_ime"
-        android:layout_width="60dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="16dp"
-        android:backgroundTint="#00000000"
-        android:contentDescription="@string/btn_previous_ime_hint"
-        android:scaleType="fitCenter"
-        android:src="@drawable/btn_previous_ime"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view_top_bar" />
+        android:id="@+id/btn_enter"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        android:src="@drawable/btn_enter"
+        android:contentDescription="@string/start_transcribing"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <ImageButton
-        style="@style/RegularImage"
-        android:id="@+id/btn_settings"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:backgroundTint="#00000000"
-        android:contentDescription="@string/btn_previous_ime_hint"
-        android:scaleType="fitCenter"
-        android:layout_marginTop="10dp"
-        android:src="@drawable/btn_settings"
-        app:layout_constraintEnd_toEndOf="@id/btn_backspace"
-        app:layout_constraintTop_toTopOf="@id/label_status"
-        app:layout_constraintBottom_toBottomOf="@id/label_status"/>
+    <!-- ─── Bottom: single 改行 button, centered ──────────────────────── -->
 
-    <!-- Phase 2: @ button (top-right, near settings). Tap to insert "@". -->
-    <TextView
-        style="@style/RegularText"
-        android:id="@+id/btn_at_symbol"
-        android:layout_width="44dp"
-        android:layout_height="44dp"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center"
-        android:text="@"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:contentDescription="@string/btn_at_symbol_hint"
-        app:layout_constraintEnd_toStartOf="@id/btn_settings"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintTop_toTopOf="@id/btn_settings"
-        app:layout_constraintBottom_toBottomOf="@id/btn_settings" />
-
-    <!-- Phase 2: explicit 改行 button (bottom-left of space bar). Always inserts "\n"
-         regardless of destination field's Enter-action, so e.g. Discord compose can get
-         a newline without submitting. -->
     <TextView
         style="@style/RegularText"
         android:id="@+id/btn_newline"
-        android:layout_width="60dp"
-        android:layout_height="35dp"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:layout_width="120dp"
+        android:layout_height="44dp"
+        android:layout_marginTop="10dp"
+        android:background="?android:attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
         android:gravity="center"
         android:text="改行"
-        android:textSize="14sp"
+        android:textSize="16sp"
         android:contentDescription="@string/btn_newline_hint"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintEnd_toStartOf="@id/btn_space_bar"
-        app:layout_constraintTop_toTopOf="@id/btn_space_bar"
-        app:layout_constraintBottom_toBottomOf="@id/btn_space_bar" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_mic_frame" />
 </androidx.constraintlayout.widget.ConstraintLayout>
