@@ -44,7 +44,7 @@ class BackspaceButton(context: Context, attrs: AttributeSet) :
         setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                    performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                     performClick()
                     startLongPressDetector()
                 }

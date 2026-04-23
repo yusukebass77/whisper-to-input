@@ -247,4 +247,43 @@
         app:layout_constraintEnd_toEndOf="@id/btn_backspace"
         app:layout_constraintTop_toTopOf="@id/label_status"
         app:layout_constraintBottom_toBottomOf="@id/label_status"/>
+
+    <!-- Phase 2: @ button (top-right, near settings). Tap to insert "@". -->
+    <TextView
+        style="@style/RegularText"
+        android:id="@+id/btn_at_symbol"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:text="@"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:contentDescription="@string/btn_at_symbol_hint"
+        app:layout_constraintEnd_toStartOf="@id/btn_settings"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintTop_toTopOf="@id/btn_settings"
+        app:layout_constraintBottom_toBottomOf="@id/btn_settings" />
+
+    <!-- Phase 2: explicit 改行 button (bottom-left of space bar). Always inserts "\n"
+         regardless of destination field's Enter-action, so e.g. Discord compose can get
+         a newline without submitting. -->
+    <TextView
+        style="@style/RegularText"
+        android:id="@+id/btn_newline"
+        android:layout_width="60dp"
+        android:layout_height="35dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:text="改行"
+        android:textSize="14sp"
+        android:contentDescription="@string/btn_newline_hint"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toStartOf="@id/btn_space_bar"
+        app:layout_constraintTop_toTopOf="@id/btn_space_bar"
+        app:layout_constraintBottom_toBottomOf="@id/btn_space_bar" />
 </androidx.constraintlayout.widget.ConstraintLayout>

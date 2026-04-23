@@ -18,6 +18,8 @@
     <string name="successfully_set">Successfully set!</string>
     <string name="backspace_button_hint">Backspace Button</string>
     <string name="btn_previous_ime_hint">Switch To Previous Input Method</string>
+    <string name="btn_at_symbol_hint">Insert At Symbol</string>
+    <string name="btn_newline_hint">Insert Newline</string>
     <string name="generate_logcat">Generate Recent Logcat</string>
 
     <!-- Warning and Error Messages -->

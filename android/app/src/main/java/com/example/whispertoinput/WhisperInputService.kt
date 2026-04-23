@@ -26,6 +26,7 @@ import android.content.Intent
 import android.os.IBinder
 import android.text.TextUtils
 import android.view.KeyEvent
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.datastore.preferences.core.Preferences
@@ -133,8 +134,20 @@ class WhisperInputService : InputMethodService() {
             { onSpaceBar() },
             { onSwitchIme() },
             { onOpenSettings() },
+            { onAtSymbol() },
+            { onNewline() },
             { shouldShowRetry() },
         )
+    }
+
+    private fun onAtSymbol() {
+        currentInputConnection?.commitText("@", 1)
+    }
+
+    private fun onNewline() {
+        // Always inserts a literal newline, regardless of the destination field's
+        // Enter-action. Counterpart to onEnter(), which respects the field's action.
+        currentInputConnection?.commitText("\n", 1)
     }
 
     private fun onStartRecording() {
@@ -203,11 +216,28 @@ class WhisperInputService : InputMethodService() {
 
     private fun onEnter() {
         val inputConnection = currentInputConnection ?: return
-        // Some modern editors (Discord, multi-line text fields after paste, etc.) drop the
-        // Enter key press unless both DOWN and UP events are delivered. The original code
-        // only sent DOWN, which made the key silently inert in many contexts.
-        inputConnection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
-        inputConnection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
+        // Decide newline-vs-submit based on the destination field's IME hints.
+        // - Fields that explicitly disable the Enter action (IME_FLAG_NO_ENTER_ACTION) or
+        //   don't set one (IME_ACTION_NONE / UNSPECIFIED) are multi-line — insert a literal
+        //   newline so the user can compose multi-paragraph text.
+        // - Fields with a real action (Send, Done, Search, …) get a proper DOWN+UP key
+        //   stroke so the app triggers its action naturally. (Single DOWN was silently
+        //   dropped by modern editors before, which is why Enter appeared inert.)
+        // Note: Discord's compose field sets IME_ACTION_SEND by default, so Enter will
+        // submit there — use the explicit "改行" button (Phase 2) to insert a newline.
+        val imeOptions = currentInputEditorInfo?.imeOptions ?: 0
+        val noEnterAction = (imeOptions and EditorInfo.IME_FLAG_NO_ENTER_ACTION) != 0
+        val action = imeOptions and EditorInfo.IME_MASK_ACTION
+        val hasRealAction = !noEnterAction &&
+                action != EditorInfo.IME_ACTION_NONE &&
+                action != EditorInfo.IME_ACTION_UNSPECIFIED
+
+        if (hasRealAction) {
+            inputConnection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
+            inputConnection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
+        } else {
+            inputConnection.commitText("\n", 1)
+        }
     }
 
     private fun onSpaceBar() {

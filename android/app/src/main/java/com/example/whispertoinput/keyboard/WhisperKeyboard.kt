@@ -36,8 +36,10 @@ import kotlin.math.log10
 import kotlin.math.pow
 
 private fun View.hapticTap() {
-    // KEYBOARD_TAP gives a short, crisp tick that matches soft-keyboard UX on most devices.
-    performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+    // LONG_PRESS is noticeably stronger than KEYBOARD_TAP. User requested a firmer tick
+    // than the default soft-keyboard feel. LONG_PRESS has been available since API 3, so
+    // it works on every device we target.
+    performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
 }
 
 private const val AMPLITUDE_CLAMP_MIN: Int = 10
@@ -64,6 +66,8 @@ class WhisperKeyboard {
     private var onOpenSettings: () -> Unit = { }
     private var onEnter: () -> Unit = { }
     private var onSpaceBar: () -> Unit = { }
+    private var onAtSymbol: () -> Unit = { }
+    private var onNewline: () -> Unit = { }
     private var shouldShowRetry: () -> Boolean = { false }
 
     // Keyboard Status
@@ -81,6 +85,8 @@ class WhisperKeyboard {
     private var buttonBackspace: BackspaceButton? = null
     private var buttonPreviousIme: ImageButton? = null
     private var buttonSettings: ImageButton? = null
+    private var buttonAtSymbol: TextView? = null
+    private var buttonNewline: TextView? = null
     private var micRippleContainer: ConstraintLayout? = null
     private var micRipples: Array<ImageView> = emptyArray()
 
@@ -96,6 +102,8 @@ class WhisperKeyboard {
         onSpaceBar: () -> Unit,
         onSwitchIme: () -> Unit,
         onOpenSettings: () -> Unit,
+        onAtSymbol: () -> Unit,
+        onNewline: () -> Unit,
         shouldShowRetry: () -> Boolean,
     ): View {
         // Inflate the keyboard layout & assign views
@@ -110,6 +118,8 @@ class WhisperKeyboard {
         buttonBackspace = keyboardView!!.findViewById(R.id.btn_backspace) as BackspaceButton
         buttonPreviousIme = keyboardView!!.findViewById(R.id.btn_previous_ime) as ImageButton
         buttonSettings = keyboardView!!.findViewById(R.id.btn_settings) as ImageButton
+        buttonAtSymbol = keyboardView!!.findViewById(R.id.btn_at_symbol) as TextView
+        buttonNewline = keyboardView!!.findViewById(R.id.btn_newline) as TextView
         micRippleContainer = keyboardView!!.findViewById(R.id.mic_ripples) as ConstraintLayout
         micRipples = arrayOf(
             keyboardView!!.findViewById(R.id.mic_ripple_0) as ImageView,
@@ -132,6 +142,8 @@ class WhisperKeyboard {
         // BackspaceButton has its own custom callback wiring — haptic fires inside its class
         buttonBackspace!!.setBackspaceCallback { onButtonBackspaceClick() }
         buttonSpaceBar!!.setOnClickListener { it.hapticTap(); onButtonSpaceBarClick() }
+        buttonAtSymbol!!.setOnClickListener { it.hapticTap(); onAtSymbol() }
+        buttonNewline!!.setOnClickListener { it.hapticTap(); onNewline() }
 
         if (shouldOfferImeSwitch) {
             buttonPreviousIme!!.setOnClickListener { it.hapticTap(); onButtonPreviousImeClick() }
@@ -147,6 +159,8 @@ class WhisperKeyboard {
         this.onOpenSettings = onOpenSettings
         this.onEnter = onEnter
         this.onSpaceBar = onSpaceBar
+        this.onAtSymbol = onAtSymbol
+        this.onNewline = onNewline
         this.shouldShowRetry = shouldShowRetry
 
         // Resets keyboard upon setup
