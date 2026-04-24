@@ -49,6 +49,17 @@ private const val LOG_10_25000: Float = 4.398F
 private const val AMPLITUDE_ANIMATION_DURATION: Long = 500
 private val amplitudePowers: Array<Float> = arrayOf(0.5f, 1.0f, 2f, 3f)
 
+// Kuroppi button cycle. Keys match the proxy's STYLE_MODIFIERS keys;
+// the mapped strings are the short Japanese labels shown on the button.
+private val KUROPPI_STYLES = listOf("raw", "polite", "casual", "bullets", "140")
+private val KUROPPI_STYLE_LABELS = mapOf(
+    "raw" to "そのまま",
+    "polite" to "丁寧",
+    "casual" to "カジュアル",
+    "bullets" to "箇条書",
+    "140" to "140字",
+)
+
 class WhisperKeyboard {
     private enum class KeyboardStatus {
         Idle,             // Ready to start recording
@@ -72,7 +83,14 @@ class WhisperKeyboard {
     private var onCursorLeft: () -> Unit = { }
     private var onCursorRight: () -> Unit = { }
     private var onSend: () -> Unit = { }
+    private var onKuroppiStyleChange: (String) -> Unit = { }
+    private var onKuroppiConvModeChange: (Boolean) -> Unit = { }
     private var shouldShowRetry: () -> Boolean = { false }
+
+    // Kuroppi mode state. Defaults match the proxy's defaults ("raw"/off).
+    // Service refreshes these via setKuroppiState() once DataStore is read.
+    private var currentKuroppiStyle: String = "raw"
+    private var currentKuroppiConvMode: Boolean = false
 
     // Keyboard Status
     private var keyboardStatus: KeyboardStatus = KeyboardStatus.Idle
@@ -95,6 +113,7 @@ class WhisperKeyboard {
     private var buttonCursorLeft: TextView? = null
     private var buttonCursorRight: TextView? = null
     private var buttonSend: TextView? = null
+    private var buttonKuroppi: TextView? = null
     private var numberPad: View? = null
     private var padPage1: View? = null
     private var padPage2: View? = null
@@ -123,6 +142,8 @@ class WhisperKeyboard {
         onCursorLeft: () -> Unit,
         onCursorRight: () -> Unit,
         onSend: () -> Unit,
+        onKuroppiStyleChange: (String) -> Unit,
+        onKuroppiConvModeChange: (Boolean) -> Unit,
         shouldShowRetry: () -> Boolean,
     ): View {
         // Inflate the keyboard layout & assign views
@@ -143,6 +164,7 @@ class WhisperKeyboard {
         buttonCursorLeft = keyboardView!!.findViewById(R.id.btn_cursor_left) as TextView
         buttonCursorRight = keyboardView!!.findViewById(R.id.btn_cursor_right) as TextView
         buttonSend = keyboardView!!.findViewById(R.id.btn_send) as TextView
+        buttonKuroppi = keyboardView!!.findViewById(R.id.btn_kuroppi) as TextView
         numberPad = keyboardView!!.findViewById(R.id.number_pad)
         padPage1 = keyboardView!!.findViewById(R.id.pad_page_1)
         padPage2 = keyboardView!!.findViewById(R.id.pad_page_2)
@@ -219,6 +241,21 @@ class WhisperKeyboard {
         buttonCursorLeft!!.setOnClickListener { it.hapticTap(); onCursorLeft() }
         buttonCursorRight!!.setOnClickListener { it.hapticTap(); onCursorRight() }
         buttonSend!!.setOnClickListener { it.hapticTap(); onSend() }
+        buttonKuroppi!!.setOnClickListener {
+            it.hapticTap()
+            val idx = KUROPPI_STYLES.indexOf(currentKuroppiStyle).coerceAtLeast(0)
+            val next = KUROPPI_STYLES[(idx + 1) % KUROPPI_STYLES.size]
+            currentKuroppiStyle = next
+            updateKuroppiLabel()
+            this.onKuroppiStyleChange(next)
+        }
+        buttonKuroppi!!.setOnLongClickListener {
+            it.hapticTap()
+            currentKuroppiConvMode = !currentKuroppiConvMode
+            updateKuroppiLabel()
+            this.onKuroppiConvModeChange(currentKuroppiConvMode)
+            true
+        }
 
         buttonNumberToggle!!.setOnClickListener {
             it.hapticTap()
@@ -253,7 +290,13 @@ class WhisperKeyboard {
         this.onCursorLeft = onCursorLeft
         this.onCursorRight = onCursorRight
         this.onSend = onSend
+        this.onKuroppiStyleChange = onKuroppiStyleChange
+        this.onKuroppiConvModeChange = onKuroppiConvModeChange
         this.shouldShowRetry = shouldShowRetry
+
+        // Render the initial Kuroppi label using defaults; service will
+        // refresh via setKuroppiState() once DataStore is read.
+        updateKuroppiLabel()
 
         // Resets keyboard upon setup
         reset()
@@ -264,6 +307,23 @@ class WhisperKeyboard {
 
     fun reset() {
         setKeyboardStatus(KeyboardStatus.Idle)
+    }
+
+    /**
+     * Called by the service once DataStore has been read, to seed the
+     * current Kuroppi button state with persisted values.
+     */
+    fun setKuroppiState(style: String, convMode: Boolean) {
+        currentKuroppiStyle = if (style in KUROPPI_STYLES) style else "raw"
+        currentKuroppiConvMode = convMode
+        updateKuroppiLabel()
+    }
+
+    private fun updateKuroppiLabel() {
+        val btn = buttonKuroppi ?: return
+        val styleLabel = KUROPPI_STYLE_LABELS[currentKuroppiStyle] ?: "そのまま"
+        val convPrefix = if (currentKuroppiConvMode) "●対話 " else ""
+        btn.text = "${convPrefix}くろっぴー・$styleLabel"
     }
 
     fun updateMicrophoneAmplitude(amplitude: Int) {

@@ -30,6 +30,7 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
 import com.example.whispertoinput.keyboard.WhisperKeyboard
 import com.example.whispertoinput.recorder.RecorderManager
 import com.github.liuyueyi.quick.transfer.ChineseUtils
@@ -123,7 +124,7 @@ class WhisperInputService : InputMethodService() {
         }
 
         // Returns the keyboard after setting it up and inflating its layout
-        return whisperKeyboard.setup(layoutInflater,
+        val view = whisperKeyboard.setup(layoutInflater,
             shouldOfferImeSwitch,
             { onStartRecording() },
             { onCancelRecording() },
@@ -140,8 +141,34 @@ class WhisperInputService : InputMethodService() {
             { onCursorLeft() },
             { onCursorRight() },
             { onSend() },
+            { style -> onKuroppiStyleChange(style) },
+            { convMode -> onKuroppiConvModeChange(convMode) },
             { shouldShowRetry() },
         )
+
+        // Seed Kuroppi button state from persisted preferences.
+        CoroutineScope(Dispatchers.Main).launch {
+            val (style, convMode) = dataStore.data.map { prefs: Preferences ->
+                Pair(prefs[KUROPPI_STYLE] ?: "raw", prefs[KUROPPI_CONV_MODE] ?: false)
+            }.first()
+            whisperKeyboard.setKuroppiState(style, convMode)
+        }
+
+        return view
+    }
+
+    /** Persist the new Kuroppi style selection (fire-and-forget from the UI). */
+    private fun onKuroppiStyleChange(style: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            dataStore.edit { it[KUROPPI_STYLE] = style }
+        }
+    }
+
+    /** Persist the new Kuroppi conversation-mode selection. */
+    private fun onKuroppiConvModeChange(convMode: Boolean) {
+        CoroutineScope(Dispatchers.IO).launch {
+            dataStore.edit { it[KUROPPI_CONV_MODE] = convMode }
+        }
     }
 
     private fun onAtSymbol() {

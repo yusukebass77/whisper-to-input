@@ -63,6 +63,10 @@ val AUTO_RECORDING_START = booleanPreferencesKey("is-auto-recording-start")
 val AUTO_SWITCH_BACK = booleanPreferencesKey("auto-switch-back")
 val ADD_TRAILING_SPACE = booleanPreferencesKey("add-trailing-space")
 val POSTPROCESSING = stringPreferencesKey("postprocessing")
+// Kuroppi button state — short-tap cycles the style, long-press toggles conversation mode.
+// Stored here so it persists across keyboard sessions.
+val KUROPPI_STYLE = stringPreferencesKey("kuroppi-style")
+val KUROPPI_CONV_MODE = booleanPreferencesKey("kuroppi-conv-mode")
 
 class MainActivity : AppCompatActivity() {
     private var setupSettingItemsDone: Boolean = false

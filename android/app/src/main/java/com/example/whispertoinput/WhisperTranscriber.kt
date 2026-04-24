@@ -43,7 +43,9 @@ class WhisperTranscriber {
         val apiKey: String,
         val model: String,
         val postprocessing: String,
-        val addTrailingSpace: Boolean
+        val addTrailingSpace: Boolean,
+        val kuroppiStyle: String,
+        val kuroppiConvMode: Boolean
     )
 
     private val TAG = "WhisperTranscriber"
@@ -59,7 +61,7 @@ class WhisperTranscriber {
     ) {
         suspend fun makeWhisperRequest(): String {
             // Retrieve configs
-            val (endpoint, languageCode, speechToTextBackend, apiKey, model, postprocessing, addTrailingSpace) = context.dataStore.data.map { preferences: Preferences ->
+            val cfg = context.dataStore.data.map { preferences: Preferences ->
                 Config(
                     preferences[ENDPOINT] ?: "",
                     preferences[LANGUAGE_CODE] ?: "",
@@ -67,9 +69,18 @@ class WhisperTranscriber {
                     preferences[API_KEY] ?: "",
                     preferences[MODEL] ?: "",
                     preferences[POSTPROCESSING] ?: context.getString(R.string.settings_option_no_conversion),
-                    preferences[ADD_TRAILING_SPACE] ?: false
+                    preferences[ADD_TRAILING_SPACE] ?: false,
+                    preferences[KUROPPI_STYLE] ?: "raw",
+                    preferences[KUROPPI_CONV_MODE] ?: false
                 )
             }.first()
+            val endpoint = cfg.endpoint
+            val languageCode = cfg.languageCode
+            val speechToTextBackend = cfg.speechToTextBackend
+            val apiKey = cfg.apiKey
+            val model = cfg.model
+            val postprocessing = cfg.postprocessing
+            val addTrailingSpace = cfg.addTrailingSpace
 
             // Foolproof message
             if (endpoint == "") {
@@ -86,7 +97,9 @@ class WhisperTranscriber {
                 endpoint,
                 languageCode,
                 apiKey,
-                model
+                model,
+                cfg.kuroppiStyle,
+                cfg.kuroppiConvMode
             )
             val response = client.newCall(request).execute()
 
@@ -170,7 +183,9 @@ class WhisperTranscriber {
         endpoint: String,
         languageCode: String,
         apiKey: String,
-        model: String
+        model: String,
+        kuroppiStyle: String,
+        kuroppiConvMode: Boolean
     ): Request {
         // Please refer to the following for the endpoint/payload definitions:
         // OpenAI API:
@@ -218,6 +233,12 @@ class WhisperTranscriber {
                 addFormDataPart("language", languageCode)
                 addFormDataPart("response_format", "text")
             }
+            // Kuroppi button state — carried on every request so the proxy can
+            // pick the right refine prompt / conversation persona. The upstream
+            // OpenAI / NIM endpoints ignore unknown form fields, so it's safe
+            // to always attach these regardless of backend.
+            addFormDataPart("style", kuroppiStyle)
+            addFormDataPart("conversation_mode", if (kuroppiConvMode) "1" else "0")
         }.build()
 
         val requestHeaders: Headers = Headers.Builder().apply {
