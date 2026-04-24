@@ -21,6 +21,9 @@
     <string name="btn_at_symbol_hint">Insert At Symbol</string>
     <string name="btn_newline_hint">Insert Newline</string>
     <string name="btn_number_toggle_hint">Toggle Number Pad</string>
+    <string name="btn_cursor_left_hint">Move Cursor Left</string>
+    <string name="btn_cursor_right_hint">Move Cursor Right</string>
+    <string name="btn_send_hint">Send (IME_ACTION_SEND)</string>
     <string name="generate_logcat">Generate Recent Logcat</string>
 
     <!-- Warning and Error Messages -->

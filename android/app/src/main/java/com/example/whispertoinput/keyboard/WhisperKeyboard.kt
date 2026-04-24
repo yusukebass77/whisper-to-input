@@ -69,6 +69,9 @@ class WhisperKeyboard {
     private var onAtSymbol: () -> Unit = { }
     private var onNewline: () -> Unit = { }
     private var onDigit: (String) -> Unit = { }
+    private var onCursorLeft: () -> Unit = { }
+    private var onCursorRight: () -> Unit = { }
+    private var onSend: () -> Unit = { }
     private var shouldShowRetry: () -> Boolean = { false }
 
     // Keyboard Status
@@ -89,6 +92,9 @@ class WhisperKeyboard {
     private var buttonAtSymbol: TextView? = null
     private var buttonNewline: TextView? = null
     private var buttonNumberToggle: TextView? = null
+    private var buttonCursorLeft: TextView? = null
+    private var buttonCursorRight: TextView? = null
+    private var buttonSend: TextView? = null
     private var numberPad: View? = null
     private var digitButtons: Array<TextView> = emptyArray()
     private var micRippleContainer: ConstraintLayout? = null
@@ -109,6 +115,9 @@ class WhisperKeyboard {
         onAtSymbol: () -> Unit,
         onNewline: () -> Unit,
         onDigit: (String) -> Unit,
+        onCursorLeft: () -> Unit,
+        onCursorRight: () -> Unit,
+        onSend: () -> Unit,
         shouldShowRetry: () -> Boolean,
     ): View {
         // Inflate the keyboard layout & assign views
@@ -126,6 +135,9 @@ class WhisperKeyboard {
         buttonAtSymbol = keyboardView!!.findViewById(R.id.btn_at_symbol) as TextView
         buttonNewline = keyboardView!!.findViewById(R.id.btn_newline) as TextView
         buttonNumberToggle = keyboardView!!.findViewById(R.id.btn_number_toggle) as TextView
+        buttonCursorLeft = keyboardView!!.findViewById(R.id.btn_cursor_left) as TextView
+        buttonCursorRight = keyboardView!!.findViewById(R.id.btn_cursor_right) as TextView
+        buttonSend = keyboardView!!.findViewById(R.id.btn_send) as TextView
         numberPad = keyboardView!!.findViewById(R.id.number_pad)
         digitButtons = arrayOf(
             keyboardView!!.findViewById(R.id.btn_digit_0) as TextView,
@@ -163,6 +175,9 @@ class WhisperKeyboard {
         buttonSpaceBar!!.setOnClickListener { it.hapticTap(); onButtonSpaceBarClick() }
         buttonAtSymbol!!.setOnClickListener { it.hapticTap(); onAtSymbol() }
         buttonNewline!!.setOnClickListener { it.hapticTap(); onNewline() }
+        buttonCursorLeft!!.setOnClickListener { it.hapticTap(); onCursorLeft() }
+        buttonCursorRight!!.setOnClickListener { it.hapticTap(); onCursorRight() }
+        buttonSend!!.setOnClickListener { it.hapticTap(); onSend() }
 
         buttonNumberToggle!!.setOnClickListener {
             it.hapticTap()
@@ -192,6 +207,9 @@ class WhisperKeyboard {
         this.onAtSymbol = onAtSymbol
         this.onNewline = onNewline
         this.onDigit = onDigit
+        this.onCursorLeft = onCursorLeft
+        this.onCursorRight = onCursorRight
+        this.onSend = onSend
         this.shouldShowRetry = shouldShowRetry
 
         // Resets keyboard upon setup

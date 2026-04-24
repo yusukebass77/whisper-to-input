@@ -137,6 +137,9 @@ class WhisperInputService : InputMethodService() {
             { onAtSymbol() },
             { onNewline() },
             { digit -> onDigit(digit) },
+            { onCursorLeft() },
+            { onCursorRight() },
+            { onSend() },
             { shouldShowRetry() },
         )
     }
@@ -153,6 +156,29 @@ class WhisperInputService : InputMethodService() {
 
     private fun onDigit(digit: String) {
         currentInputConnection?.commitText(digit, 1)
+    }
+
+    private fun onCursorLeft() {
+        val ic = currentInputConnection ?: return
+        ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_LEFT))
+        ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_LEFT))
+    }
+
+    private fun onCursorRight() {
+        val ic = currentInputConnection ?: return
+        ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT))
+        ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_RIGHT))
+    }
+
+    private fun onSend() {
+        // Force IME_ACTION_SEND regardless of the field's declared action.
+        // Falls back to KEYCODE_ENTER if the field doesn't accept the editor action.
+        val ic = currentInputConnection ?: return
+        val accepted = ic.performEditorAction(EditorInfo.IME_ACTION_SEND)
+        if (!accepted) {
+            ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
+            ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
+        }
     }
 
     private fun onStartRecording() {
