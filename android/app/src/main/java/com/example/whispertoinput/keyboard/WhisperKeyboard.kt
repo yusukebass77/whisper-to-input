@@ -85,6 +85,8 @@ class WhisperKeyboard {
     private var onSend: () -> Unit = { }
     private var onKuroppiStyleChange: (String) -> Unit = { }
     private var onKuroppiConvModeChange: (Boolean) -> Unit = { }
+    private var onClearChunk: () -> Unit = { }
+    private var onClearAll: () -> Unit = { }
     private var shouldShowRetry: () -> Boolean = { false }
 
     // Kuroppi mode state. Defaults match the proxy's defaults ("raw"/off).
@@ -114,6 +116,8 @@ class WhisperKeyboard {
     private var buttonCursorRight: TextView? = null
     private var buttonSend: TextView? = null
     private var buttonKuroppi: TextView? = null
+    private var buttonConvToggle: TextView? = null
+    private var buttonClearAll: TextView? = null
     private var numberPad: View? = null
     private var padPage1: View? = null
     private var padPage2: View? = null
@@ -144,6 +148,8 @@ class WhisperKeyboard {
         onSend: () -> Unit,
         onKuroppiStyleChange: (String) -> Unit,
         onKuroppiConvModeChange: (Boolean) -> Unit,
+        onClearChunk: () -> Unit,
+        onClearAll: () -> Unit,
         shouldShowRetry: () -> Boolean,
     ): View {
         // Inflate the keyboard layout & assign views
@@ -165,6 +171,8 @@ class WhisperKeyboard {
         buttonCursorRight = keyboardView!!.findViewById(R.id.btn_cursor_right) as TextView
         buttonSend = keyboardView!!.findViewById(R.id.btn_send) as TextView
         buttonKuroppi = keyboardView!!.findViewById(R.id.btn_kuroppi) as TextView
+        buttonConvToggle = keyboardView!!.findViewById(R.id.btn_conv_toggle) as TextView
+        buttonClearAll = keyboardView!!.findViewById(R.id.btn_clear_all) as TextView
         numberPad = keyboardView!!.findViewById(R.id.number_pad)
         padPage1 = keyboardView!!.findViewById(R.id.pad_page_1)
         padPage2 = keyboardView!!.findViewById(R.id.pad_page_2)
@@ -241,6 +249,10 @@ class WhisperKeyboard {
         buttonCursorLeft!!.setOnClickListener { it.hapticTap(); onCursorLeft() }
         buttonCursorRight!!.setOnClickListener { it.hapticTap(); onCursorRight() }
         buttonSend!!.setOnClickListener { it.hapticTap(); onSend() }
+        // Kuroppi style button — short tap cycles through refine styles.
+        // Conversation mode now lives on a dedicated btn_conv_toggle (see below)
+        // after user feedback that long-press on one dual-function button was
+        // non-discoverable.
         buttonKuroppi!!.setOnClickListener {
             it.hapticTap()
             val idx = KUROPPI_STYLES.indexOf(currentKuroppiStyle).coerceAtLeast(0)
@@ -249,11 +261,21 @@ class WhisperKeyboard {
             updateKuroppiLabel()
             this.onKuroppiStyleChange(next)
         }
-        buttonKuroppi!!.setOnLongClickListener {
+        buttonConvToggle!!.setOnClickListener {
             it.hapticTap()
             currentKuroppiConvMode = !currentKuroppiConvMode
             updateKuroppiLabel()
             this.onKuroppiConvModeChange(currentKuroppiConvMode)
+        }
+        // Clear button — short tap deletes a chunk (5 chars back), long press
+        // wipes the field. Distinct from the small ⌫ which does 1 char.
+        buttonClearAll!!.setOnClickListener {
+            it.hapticTap()
+            this.onClearChunk()
+        }
+        buttonClearAll!!.setOnLongClickListener {
+            it.hapticTap()
+            this.onClearAll()
             true
         }
 
@@ -292,6 +314,8 @@ class WhisperKeyboard {
         this.onSend = onSend
         this.onKuroppiStyleChange = onKuroppiStyleChange
         this.onKuroppiConvModeChange = onKuroppiConvModeChange
+        this.onClearChunk = onClearChunk
+        this.onClearAll = onClearAll
         this.shouldShowRetry = shouldShowRetry
 
         // Render the initial Kuroppi label using defaults; service will
@@ -320,10 +344,13 @@ class WhisperKeyboard {
     }
 
     private fun updateKuroppiLabel() {
-        val btn = buttonKuroppi ?: return
-        val styleLabel = KUROPPI_STYLE_LABELS[currentKuroppiStyle] ?: "そのまま"
-        val convPrefix = if (currentKuroppiConvMode) "●対話 " else ""
-        btn.text = "${convPrefix}くろっぴー・$styleLabel"
+        buttonKuroppi?.let { btn ->
+            val styleLabel = KUROPPI_STYLE_LABELS[currentKuroppiStyle] ?: "そのまま"
+            btn.text = "くろっぴー・$styleLabel"
+        }
+        buttonConvToggle?.let { btn ->
+            btn.text = if (currentKuroppiConvMode) "●対話" else "対話OFF"
+        }
     }
 
     fun updateMicrophoneAmplitude(amplitude: Int) {

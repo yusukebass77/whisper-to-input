@@ -336,7 +336,7 @@
         <TextView
             style="@style/RegularText"
             android:id="@+id/btn_newline"
-            android:layout_width="110dp"
+            android:layout_width="90dp"
             android:layout_height="44dp"
             android:background="@drawable/carbon_button_bg"
             android:clickable="true"
@@ -349,7 +349,7 @@
         <TextView
             style="@style/RegularText"
             android:id="@+id/btn_send"
-            android:layout_width="110dp"
+            android:layout_width="90dp"
             android:layout_height="44dp"
             android:layout_marginStart="8dp"
             android:background="@drawable/carbon_button_bg"
@@ -359,29 +359,64 @@
             android:text="送信"
             android:textSize="16sp"
             android:contentDescription="@string/btn_send_hint" />
+
+        <TextView
+            style="@style/RegularText"
+            android:id="@+id/btn_clear_all"
+            android:layout_width="90dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/carbon_button_bg"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="全消去"
+            android:textSize="16sp"
+            android:contentDescription="@string/btn_clear_all_hint" />
     </LinearLayout>
 
-    <!-- ─── Kuroppi mode button (short-tap = cycle style, long-press = toggle conv mode) ── -->
+    <!-- ─── Kuroppi mode row: left = style cycle (tap), right = 対話 toggle ──── -->
 
-    <TextView
-        style="@style/RegularText"
-        android:id="@+id/btn_kuroppi"
+    <LinearLayout
+        android:id="@+id/kuroppi_row"
         android:layout_width="wrap_content"
-        android:layout_height="38dp"
-        android:minWidth="220dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:layout_marginTop="6dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:background="@drawable/carbon_button_bg"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center"
-        android:text="くろっぴー・そのまま"
-        android:textSize="14sp"
-        android:contentDescription="@string/btn_kuroppi_hint"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bottom_button_row" />
+        app:layout_constraintTop_toBottomOf="@+id/bottom_button_row">
+
+        <TextView
+            style="@style/RegularText"
+            android:id="@+id/btn_kuroppi"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:minWidth="180dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:background="@drawable/carbon_button_bg"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="くろっぴー・そのまま"
+            android:textSize="14sp"
+            android:contentDescription="@string/btn_kuroppi_hint" />
+
+        <TextView
+            style="@style/RegularText"
+            android:id="@+id/btn_conv_toggle"
+            android:layout_width="90dp"
+            android:layout_height="38dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/carbon_button_bg"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="対話OFF"
+            android:textSize="14sp"
+            android:contentDescription="@string/btn_conv_toggle_hint" />
+    </LinearLayout>
 
     <!-- Calculator-style pad — 2-page GridLayout, toggled by btn_number_toggle (123).
          Page 1: digits (0-9) + common symbols (. , : / -).
@@ -400,7 +435,7 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_kuroppi">
+        app:layout_constraintTop_toBottomOf="@+id/kuroppi_row">
 
         <!-- Page 1: digits + common symbols -->
         <LinearLayout

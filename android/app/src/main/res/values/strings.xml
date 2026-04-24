@@ -25,7 +25,9 @@
     <string name="btn_cursor_right_hint">Move Cursor Right</string>
     <string name="btn_send_hint">Send (IME_ACTION_SEND)</string>
     <string name="btn_pad_page_switch_hint">Switch Pad Page</string>
-    <string name="btn_kuroppi_hint">Kuroppi Mode (tap: cycle style, long-press: toggle conversation)</string>
+    <string name="btn_kuroppi_hint">Kuroppi Mode (tap: cycle style)</string>
+    <string name="btn_conv_toggle_hint">Toggle Kuroppi Conversation Mode</string>
+    <string name="btn_clear_all_hint">Clear (tap: 5 chars backspace, long-press: clear all)</string>
     <string name="generate_logcat">Generate Recent Logcat</string>
 
     <!-- Warning and Error Messages -->

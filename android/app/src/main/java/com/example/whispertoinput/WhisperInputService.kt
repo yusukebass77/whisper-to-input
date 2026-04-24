@@ -143,6 +143,8 @@ class WhisperInputService : InputMethodService() {
             { onSend() },
             { style -> onKuroppiStyleChange(style) },
             { convMode -> onKuroppiConvModeChange(convMode) },
+            { onClearChunk() },
+            { onClearAll() },
             { shouldShowRetry() },
         )
 
@@ -169,6 +171,29 @@ class WhisperInputService : InputMethodService() {
         CoroutineScope(Dispatchers.IO).launch {
             dataStore.edit { it[KUROPPI_CONV_MODE] = convMode }
         }
+    }
+
+    /** 全消去ボタン short-tap: delete a chunk (5 chars back) for fast rollback
+     *  of the last inserted phrase (especially くろっぴー's conversation reply). */
+    private fun onClearChunk() {
+        val ic = currentInputConnection ?: return
+        val selectedText = ic.getSelectedText(0)
+        if (!TextUtils.isEmpty(selectedText)) {
+            ic.commitText("", 1)
+        } else {
+            ic.deleteSurroundingText(5, 0)
+        }
+    }
+
+    /** 全消去ボタン long-press: wipe the entire visible field.
+     *  deleteSurroundingText(large, large) is the simplest portable way to
+     *  clear — it reaches up to the input buffer boundary in either
+     *  direction. Not all apps expose the full buffer, so on very long
+     *  fields this may only clear what's visible; that's acceptable for
+     *  the intended "erase kuroppi's last reply" use case. */
+    private fun onClearAll() {
+        val ic = currentInputConnection ?: return
+        ic.deleteSurroundingText(10000, 10000)
     }
 
     private fun onAtSymbol() {
