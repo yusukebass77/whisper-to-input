@@ -96,7 +96,12 @@ class WhisperKeyboard {
     private var buttonCursorRight: TextView? = null
     private var buttonSend: TextView? = null
     private var numberPad: View? = null
+    private var padPage1: View? = null
+    private var padPage2: View? = null
     private var digitButtons: Array<TextView> = emptyArray()
+    // All pad cells that just commit their displayed text (digits + symbols on both pages).
+    // Filled in setup() and wired to onDigit() uniformly.
+    private var padTextCells: Array<TextView> = emptyArray()
     private var micRippleContainer: ConstraintLayout? = null
     private var micRipples: Array<ImageView> = emptyArray()
 
@@ -139,6 +144,8 @@ class WhisperKeyboard {
         buttonCursorRight = keyboardView!!.findViewById(R.id.btn_cursor_right) as TextView
         buttonSend = keyboardView!!.findViewById(R.id.btn_send) as TextView
         numberPad = keyboardView!!.findViewById(R.id.number_pad)
+        padPage1 = keyboardView!!.findViewById(R.id.pad_page_1)
+        padPage2 = keyboardView!!.findViewById(R.id.pad_page_2)
         digitButtons = arrayOf(
             keyboardView!!.findViewById(R.id.btn_digit_0) as TextView,
             keyboardView!!.findViewById(R.id.btn_digit_1) as TextView,
@@ -151,6 +158,40 @@ class WhisperKeyboard {
             keyboardView!!.findViewById(R.id.btn_digit_8) as TextView,
             keyboardView!!.findViewById(R.id.btn_digit_9) as TextView,
         )
+        // Symbol cells from both pages — treated identically to digit cells.
+        val symbolCells: Array<TextView> = arrayOf(
+            keyboardView!!.findViewById(R.id.btn_sym_p1_period) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p1_comma) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p1_colon) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p1_slash) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p1_minus) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p2_yen) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p2_percent) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p2_amp) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p2_hash) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p2_at) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p2_excl) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p2_q) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p2_star) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p2_paren_open) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p2_paren_close) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p2_dquote) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p2_squote) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p2_plus) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p2_eq) as TextView,
+            keyboardView!!.findViewById(R.id.btn_sym_p2_tilde) as TextView,
+        )
+        padTextCells = digitButtons + symbolCells
+        val padPageSwitch1 = keyboardView!!.findViewById(R.id.btn_pad_page_switch) as TextView
+        val padPageSwitch2 = keyboardView!!.findViewById(R.id.btn_pad_page_switch_2) as TextView
+        val pageSwitchListener = View.OnClickListener {
+            it.hapticTap()
+            val onPage1 = padPage1!!.visibility == View.VISIBLE
+            padPage1!!.visibility = if (onPage1) View.GONE else View.VISIBLE
+            padPage2!!.visibility = if (onPage1) View.VISIBLE else View.GONE
+        }
+        padPageSwitch1.setOnClickListener(pageSwitchListener)
+        padPageSwitch2.setOnClickListener(pageSwitchListener)
         micRippleContainer = keyboardView!!.findViewById(R.id.mic_ripples) as ConstraintLayout
         micRipples = arrayOf(
             keyboardView!!.findViewById(R.id.mic_ripple_0) as ImageView,
@@ -183,7 +224,9 @@ class WhisperKeyboard {
             it.hapticTap()
             numberPad!!.visibility = if (numberPad!!.visibility == View.VISIBLE) View.GONE else View.VISIBLE
         }
-        for (btn in digitButtons) {
+        // All digit + symbol cells on both pad pages share the same behavior:
+        // commit the displayed glyph to the current field.
+        for (btn in padTextCells) {
             btn.setOnClickListener { v ->
                 v.hapticTap()
                 onDigit((v as TextView).text.toString())
