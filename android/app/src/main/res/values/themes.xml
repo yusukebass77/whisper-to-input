@@ -5,20 +5,29 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
+    <!-- D-5 Carbon Mono aesthetic: near-black fg on near-white bg (light mode),
+         inverted in dark mode via values-night/colors.xml. -->
     <style name="RegularImage">
-        <item name="android:tint">@color/theme_rich_black</item>
+        <item name="android:tint">@color/carbon_fg_primary</item>
     </style>
 
     <style name="RegularText">
-        <item name="android:textColor">@color/theme_rich_black</item>
+        <item name="android:textColor">@color/carbon_fg_primary</item>
+        <item name="android:fontFamily">sans-serif</item>
     </style>
 
     <style name="Background">
-        <item name="android:background">@color/theme_light_grey</item>
+        <item name="android:background">@color/carbon_bg</item>
     </style>
 
     <style name="TopBar">
-        <item name="android:background">@color/theme_rich_black</item>
+        <item name="android:background">@color/carbon_divider</item>
+    </style>
+
+    <!-- Rounded key-cap style for pad cells and bottom-row buttons. 8dp corner
+         radius, 1dp divider-line border. Applied via android:background. -->
+    <style name="CarbonKeyCap">
+        <item name="android:background">@drawable/carbon_button_bg</item>
     </style>
 
     <!-- Settings Page Styles -->
